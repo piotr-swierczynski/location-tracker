@@ -15,15 +15,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import nl.tudelft.exchange.student.locationtracker.data.AccData;
 import nl.tudelft.exchange.student.locationtracker.data.RssData;
 import nl.tudelft.exchange.student.locationtracker.data.saver.AccDataSaver;
 import nl.tudelft.exchange.student.locationtracker.data.saver.RssDataSaver;
+import nl.tudelft.exchange.student.locationtracker.filter.data.AccessPoint;
+import nl.tudelft.exchange.student.locationtracker.filter.data.SignalInCellCharacteristic;
+import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -57,6 +62,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             Log.d("LT", "No accelerometer!!!");
         }
+
+        for(Map.Entry<String, AccessPoint> entry : BayesianFilterDataLoader.loadData("PDF.txt").entrySet()) {
+            Log.d("LT", ""+entry.getKey());
+            for(Map.Entry<Integer, SignalInCellCharacteristic> accpoint : entry.getValue().getCellsCharacteristicMap().entrySet()) {
+                Log.d("LT", ""+accpoint.getKey()+" "+accpoint.getValue().getMeanSignalValue()+" "+accpoint.getValue().getStandardDeviationOfSignalValue());
+            }
+        }
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         rssiBroadcastReceiver = new RSSIBroadcastReceiver();
@@ -65,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         saveAcc.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "ACC results have been saved!", Toast.LENGTH_LONG).show();
                 try {
                     enableAccScan = false;
                     new AccDataSaver().save(accDataSet, MainActivity.this);
@@ -77,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         saveRss.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "RSS results have been saved!", Toast.LENGTH_LONG).show();
                 try {
                     enableRssScan = false;
                     new RssDataSaver().save(rssDataSet, MainActivity.this);
@@ -89,12 +103,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         startScanAcc.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "ACC Scaning begins!", Toast.LENGTH_LONG).show();
                 enableAccScan = true;
             }
         });
 
         startScanRss.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "RSS Scaning begins!", Toast.LENGTH_LONG).show();
                 enableRssScan = true;
             }
         });
@@ -139,9 +155,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void rssiScanResultHandler(List<ScanResult> scanResults) {
-        Log.d("LT",1+"");
         if(enableRssScan) {
-            Log.d("LT",2+"");
             rssDataSet.add(new RssData(System.currentTimeMillis(), scanResults));
         }
     }
