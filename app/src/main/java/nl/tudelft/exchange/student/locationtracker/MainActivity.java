@@ -32,6 +32,7 @@ import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFi
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
+    //TEST COMMIT
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private WifiManager wifiManager;
