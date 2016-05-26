@@ -68,19 +68,21 @@ public class BayesianFilter {
         Double[] probabilities = null;
         double apriori = 1/(double)NUMBER_OF_CELLS;
         List<String> macAddresses = new ArrayList<>();
-        for(ScanResult scanResult : scanResults) {
-            if(accessPointMap.containsKey(scanResult.BSSID) &&
-                    accessPointMap.get(scanResult.BSSID).getCellsCharacteristicMap().containsKey(initialBelieveCell)) {
-                probabilities = aposterioriProbabilities.get(scanResult.BSSID);
-                macAddresses.add(scanResult.BSSID);
-                if(probabilities[initialBelieveCell]==null) {
-                    probabilities[initialBelieveCell] = aposteriori(apriori,initialBelieveCell,
-                            scanResult.level, scanResult.BSSID);
-                    Log.d("LT","IF: "+probabilities[initialBelieveCell]);
-                } else {
-                    probabilities[initialBelieveCell] = aposteriori(probabilities[initialBelieveCell],
-                            initialBelieveCell, scanResult.level, scanResult.BSSID);
-                    Log.d("LT","ELSE: "+probabilities[initialBelieveCell]);
+        for(int i = 0; i < NUMBER_OF_CELLS; ++i) {
+            for (ScanResult scanResult : scanResults) {
+                if (accessPointMap.containsKey(scanResult.BSSID) &&
+                        accessPointMap.get(scanResult.BSSID).getCellsCharacteristicMap().containsKey(i)) {
+                    probabilities = aposterioriProbabilities.get(scanResult.BSSID);
+                    macAddresses.add(scanResult.BSSID);
+                    if (probabilities[i] == null) {
+                        probabilities[i] = aposteriori(apriori, i,
+                                scanResult.level, scanResult.BSSID);
+                        Log.d("LT", "IF: " + probabilities[i]);
+                    } else {
+                        probabilities[i] = aposteriori(probabilities[i],
+                                i, scanResult.level, scanResult.BSSID);
+                        Log.d("LT", "ELSE: " + probabilities[i]);
+                    }
                 }
             }
         }
