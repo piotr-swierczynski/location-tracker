@@ -26,13 +26,13 @@ import nl.tudelft.exchange.student.locationtracker.data.AccData;
 import nl.tudelft.exchange.student.locationtracker.data.RssData;
 import nl.tudelft.exchange.student.locationtracker.data.saver.AccDataSaver;
 import nl.tudelft.exchange.student.locationtracker.data.saver.RssDataSaver;
+import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
 import nl.tudelft.exchange.student.locationtracker.filter.data.AccessPoint;
 import nl.tudelft.exchange.student.locationtracker.filter.data.SignalInCellCharacteristic;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    //TEST COMMIT
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private WifiManager wifiManager;
@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button startScanRss;
     private boolean enableAccScan = false;
     private boolean enableRssScan = false;
+    private BayesianFilter bayesianFilter = null;
+    private int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +66,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("LT", "No accelerometer!!!");
         }
 
-        for(Map.Entry<String, AccessPoint> entry : BayesianFilterDataLoader.loadData("PDF.txt").entrySet()) {
-            Log.d("LT", ""+entry.getKey());
-            for(Map.Entry<Integer, SignalInCellCharacteristic> accpoint : entry.getValue().getCellsCharacteristicMap().entrySet()) {
-                Log.d("LT", ""+accpoint.getKey()+" "+accpoint.getValue().getMeanSignalValue()+" "+accpoint.getValue().getStandardDeviationOfSignalValue());
-            }
-        }
+        bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF2.txt"));
+//        for(Map.Entry<String, AccessPoint> entry : bayesianFilter.getAccessPointMap().entrySet()) {
+//            Log.d("LT", ""+entry.getKey());
+//            for(Map.Entry<Integer, SignalInCellCharacteristic> accpoint : entry.getValue().getCellsCharacteristicMap().entrySet()) {
+//                Log.d("LT", ""+accpoint.getKey()+" "+accpoint.getValue().getMeanSignalValue()+" "+accpoint.getValue().getStandardDeviationOfSignalValue());
+//            }
+//        }
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         rssiBroadcastReceiver = new RSSIBroadcastReceiver();
@@ -141,9 +144,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {    }
 
     private class RSSIBroadcastReceiver extends BroadcastReceiver {
 
@@ -156,6 +157,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void rssiScanResultHandler(List<ScanResult> scanResults) {
+        double probability = bayesianFilter.updateBelieve(scanResults,0);
+        Log.d("LT", "Probability "+(counter++)+" : "+probability);
+        if(probability > 0.9) {
+            Toast.makeText(MainActivity.this, "Jestes w kiblu! Po: "+(counter-1)+" iteracjach!", Toast.LENGTH_LONG).show();
+        }
         if(enableRssScan) {
             rssDataSet.add(new RssData(System.currentTimeMillis(), scanResults));
         }
