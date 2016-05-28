@@ -2,6 +2,7 @@ package nl.tudelft.exchange.student.locationtracker.filter;
 
 import android.net.wifi.ScanResult;
 import android.util.Log;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class BayesianFilter {
         this.accessPointMap = accessPointMap;
     }
 
-    private double calculateOverallProbability(int initialBelieveCell, List<String> macAddresses) {
+    private Pair<Integer, Double> calculateOverallProbability(int initialBelieveCell, List<String> macAddresses) {
 //        for(Map.Entry<String,Double[]> entry : aposterioriProbabilities.entrySet()) {
 //            Log.d("LT", entry.getKey()+" -> "+entry.getValue()[0]+" "+entry.getValue()[1]);
 //        }
@@ -53,18 +54,26 @@ public class BayesianFilter {
             }
             sum += multipliedProbabilities;
         }
-        multipliedProbabilities = 0.0;
-        for (String mac : macAddresses) {
-            multipliedProbabilities += aposterioriProbabilities.get(mac)[initialBelieveCell] == null
-                    ? 0.0 : aposterioriProbabilities.get(mac)[initialBelieveCell];
+        double bestCellProbability = 0.0, tmpProbability;
+        int cellID = -1;
+        for(int i = 0; i<NUMBER_OF_CELLS; ++i) {
+            tmpProbability = 0.0;
+            for (String mac : macAddresses) {
+                tmpProbability += aposterioriProbabilities.get(mac)[i] == null
+                        ? 0.0 : aposterioriProbabilities.get(mac)[i];
+            }
+            if(bestCellProbability < tmpProbability/sum) {
+                bestCellProbability = (tmpProbability/sum);
+                cellID = i;
+            }
+            Log.d("LT","CellID: "+i+" Multi: "+tmpProbability+" Sum: "+sum+" Probability: "+(tmpProbability/sum));
         }
-        Log.d("LT","Multi: "+multipliedProbabilities+" Sum: "+sum);
-        return multipliedProbabilities/sum;
+        return Pair.create(cellID,bestCellProbability);
     }
 
     /* Updates the aposteriori probabilites matrix with regards to new signals data
      */
-    public double updateBelieve(List<ScanResult> scanResults, int initialBelieveCell) {
+    public Pair<Integer, Double> updateBelieve(List<ScanResult> scanResults, int initialBelieveCell) {
         Double[] probabilities = null;
         double apriori = 1/(double)NUMBER_OF_CELLS;
         List<String> macAddresses = new ArrayList<>();
@@ -95,11 +104,12 @@ public class BayesianFilter {
         double aposteriori = 0.0;
         for(int i = 0; i<NUMBER_OF_CELLS; ++i) {
             if(accessPointMap.get(mac).getCellsCharacteristicMap().containsKey(i)) {
-                if(i == initialBelieveCell) {
-                    sum += probabilityOfObservationOnConditionThatState(i, signalStrength, mac) * apriori;
-                } else {
-                    sum += probabilityOfObservationOnConditionThatState(i, signalStrength, mac) * (1-apriori);
-                }
+//                if(i == initialBelieveCell) {
+                sum += probabilityOfObservationOnConditionThatState(i, signalStrength, mac) *
+                        (aposterioriProbabilities.get(mac)[i] == null ? apriori : aposterioriProbabilities.get(mac)[i]);
+//                } else {
+//                    sum += probabilityOfObservationOnConditionThatState(i, signalStrength, mac) * (1-apriori);
+//                }
             }
             else {
                 sum += 1.0;
