@@ -66,12 +66,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("LT", "No accelerometer!!!");
         }
 
-        bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
-
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         rssiBroadcastReceiver = new RSSIBroadcastReceiver();
         registerReceiver(rssiBroadcastReceiver, intentFilter);
+
         wifiManager.startScan();
 
         saveAcc.setOnClickListener(new View.OnClickListener() {
@@ -118,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onSwitchClicked(View view) {
         enableLocalization = !enableLocalization;
+        if(enableLocalization) {
+            bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
+            counter = 0;
+        }
     }
 
     public void onRadioButtonClicked(View view) {
@@ -179,14 +182,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void rssiScanResultHandler(List<ScanResult> scanResults) {
         if(enableLocalization) {
-            Pair<Integer, Double> probability = bayesianFilter.updateBelieve(scanResults, initialBelieveCell);
-            Toast.makeText(MainActivity.this, "Cell id: " + probability.first + "! Po: " + ++counter + " iteracjach!", Toast.LENGTH_SHORT).show();
+            Pair<Integer, Double> probability = bayesianFilter.probability(scanResults);
+            Toast.makeText(MainActivity.this, "Cell id: " + probability.first + " P(Si|O) = "+probability.second+"! Po: " + ++counter + " iteracjach!", Toast.LENGTH_SHORT).show();
             if (probability.second > 0.9) {
-                Toast.makeText(MainActivity.this, "Jestes w pokoju o id: " + probability.first + "! Po: " + counter + " iteracjach!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Jestes w pokoju o id: " + probability.first, Toast.LENGTH_SHORT).show();
             }
         }
         if(enableRssScan) {
             rssDataSet.add(new RssData(System.currentTimeMillis(), scanResults));
+            Toast.makeText(MainActivity.this, "Liczba skanów: "+rssDataSet.size(), Toast.LENGTH_SHORT).show();
         }
     }
 }
