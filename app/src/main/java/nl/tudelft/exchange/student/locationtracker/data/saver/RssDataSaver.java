@@ -19,11 +19,11 @@ import nl.tudelft.exchange.student.locationtracker.data.RssData;
  */
 public class RssDataSaver {
 
-    public void save(List<RssData> data, Context context) throws IOException {
+    public void save(List<RssData> data, String filename, Context context) throws IOException {
         File file = null;
         FileOutputStream outputStream;
         try {
-            file = new File(Environment.getExternalStorageDirectory(), "rssdata.txt");
+            file = new File(Environment.getExternalStorageDirectory(), filename+".txt");
 
             outputStream = new FileOutputStream(file);
             PrintWriter pw = new PrintWriter(outputStream);

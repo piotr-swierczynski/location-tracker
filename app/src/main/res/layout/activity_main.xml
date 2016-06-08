@@ -105,4 +105,13 @@
         android:onClick="onSwitchClicked"
         android:nestedScrollingEnabled="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Localize"
+        android:id="@+id/localize"
+        android:layout_below="@+id/switch1"
+        android:layout_toRightOf="@+id/button2"
+        android:layout_toEndOf="@+id/button2" />
+
 </RelativeLayout>

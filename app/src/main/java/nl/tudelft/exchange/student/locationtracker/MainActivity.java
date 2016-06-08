@@ -1,7 +1,9 @@
 package nl.tudelft.exchange.student.locationtracker;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
@@ -14,8 +16,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -42,12 +46,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button saveRss;
     private Button startScanAcc;
     private Button startScanRss;
+    private Button localizeBtn;
     private boolean enableAccScan = false;
     private boolean enableRssScan = false;
     private boolean enableLocalization = false;
     private BayesianFilter bayesianFilter = null;
     private int counter = 0;
-    private int initialBelieveCell = 0;
+    private int initialBelieveCell;
+    private String filename = "filename";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         saveRss = (Button) findViewById(R.id.button2);
         startScanAcc = (Button) findViewById(R.id.button3);
         startScanRss = (Button) findViewById(R.id.button4);
+        localizeBtn = (Button) findViewById(R.id.localize);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -70,8 +77,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         rssiBroadcastReceiver = new RSSIBroadcastReceiver();
         registerReceiver(rssiBroadcastReceiver, intentFilter);
-
+        wifiManager.setFrequencyBand(WifiManager.WIFI_FREQUENCY_BAND_2GHZ, false);
         wifiManager.startScan();
+
+        localizeBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LocalizationActivity.class));
+            }
+        });
 
         saveAcc.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -88,14 +101,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         saveRss.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "RSS results have been saved!", Toast.LENGTH_LONG).show();
-                try {
-                    enableRssScan = false;
-                    new RssDataSaver().save(rssDataSet, MainActivity.this);
-                    rssDataSet = new ArrayList<>();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                enableRssScan = false;
+                // get prompts.xml view
+                LayoutInflater li = LayoutInflater.from(MainActivity.this);
+                View promptsView = li.inflate(R.layout.filename_prompt, null);
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        MainActivity.this);
+
+                // set prompts.xml to alertdialog builder
+                alertDialogBuilder.setView(promptsView);
+
+                final EditText userInput = (EditText) promptsView
+                        .findViewById(R.id.editTextDialogUserInput);
+
+                // set dialog message
+                alertDialogBuilder
+                        .setCancelable(false)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // get user input and set it to result
+                                        // edit text
+                                        filename = userInput.getText().toString();
+                                        Toast.makeText(MainActivity.this, "RSS results have been saved! --> " + filename + ".txt", Toast.LENGTH_LONG).show();
+                                        try {
+                                            new RssDataSaver().save(rssDataSet, filename, MainActivity.this);
+                                            rssDataSet = new ArrayList<>();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                })
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                // show it
+                alertDialog.show();
             }
         });
 
@@ -118,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSwitchClicked(View view) {
         enableLocalization = !enableLocalization;
         if(enableLocalization) {
-            bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
+            bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("EWIdata.txt"));
             counter = 0;
         }
     }
@@ -178,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             rssiScanResultHandler(wifiManager.getScanResults());
             wifiManager.startScan(); // relaunch scan immediately
         }
+
     }
 
     private void rssiScanResultHandler(List<ScanResult> scanResults) {

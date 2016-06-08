@@ -1,11 +1,8 @@
 package nl.tudelft.exchange.student.locationtracker.filter;
 
 import android.net.wifi.ScanResult;
-import android.util.Log;
 import android.util.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +13,7 @@ import nl.tudelft.exchange.student.locationtracker.filter.data.AccessPoint;
  */
 public class BayesianFilter {
 
-    private static final int NUMBER_OF_CELLS = 4;
+    public static final int NUMBER_OF_CELLS = 4;
 
     private Map<String, AccessPoint> accessPointMap;
 
@@ -33,9 +30,7 @@ public class BayesianFilter {
 //            }
 //            aposterioriProbabilities.put(entry.getKey(),cellProbabilitiesForCertainSignal);
 //        }
-        for(int i = 0; i < NUMBER_OF_CELLS; ++i) {
-            aposterioriMemory[i] = null;
-        }
+        resetFilter();
     }
 
     public Map<String, AccessPoint> getAccessPointMap() {
@@ -44,6 +39,20 @@ public class BayesianFilter {
 
     public void setAccessPointMap(Map<String, AccessPoint> accessPointMap) {
         this.accessPointMap = accessPointMap;
+    }
+
+    public Double[] getAposterioriMemory() {
+        return aposterioriMemory;
+    }
+
+    public void setAposterioriMemory(Double[] aposterioriMemory) {
+        this.aposterioriMemory = aposterioriMemory;
+    }
+
+    public void resetFilter() {
+        for(int i = 0; i < NUMBER_OF_CELLS; ++i) {
+            aposterioriMemory[i] = null;
+        }
     }
 
 //    private Pair<Integer, Double> calculateOverallProbability(int initialBelieveCell, List<String> macAddresses) {
@@ -156,6 +165,7 @@ public class BayesianFilter {
         for(int i = 0; i<NUMBER_OF_CELLS; ++i) {
             tmpProbability = probabilityOfOverallObservationOnConditionThatState(scanResults,i) *
                     (aposterioriMemory[i] != null ? aposterioriMemory[i] : apriori) / sum;
+            aposterioriMemory[i] = tmpProbability;
             if(bestCellProbability < tmpProbability) {
                 bestCellProbability = tmpProbability;
                 bestCellID = i;
