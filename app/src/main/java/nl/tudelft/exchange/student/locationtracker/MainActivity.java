@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("LT", "No accelerometer!!!");
         }
 
-        bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF2.txt"));
+        bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
 //        for(Map.Entry<String, AccessPoint> entry : bayesianFilter.getAccessPointMap().entrySet()) {
 //            Log.d("LT", ""+entry.getKey());
 //            for(Map.Entry<Integer, SignalInCellCharacteristic> accpoint : entry.getValue().getCellsCharacteristicMap().entrySet()) {
@@ -160,9 +160,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double probability = bayesianFilter.updateBelieve(scanResults,0);
         Log.d("LT", "Probability "+(counter++)+" : "+probability);
         if(probability > 0.9) {
-            Toast.makeText(MainActivity.this, "Jestes w kiblu! Po: "+(counter-1)+" iteracjach!", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Po: "+(counter-1)+" iteracjach!", Toast.LENGTH_LONG).show();
         }
         if(enableRssScan) {
+            Toast.makeText(MainActivity.this, "Po: "+(counter)+" iteracjach!", Toast.LENGTH_LONG).show();
             rssDataSet.add(new RssData(System.currentTimeMillis(), scanResults));
         }
     }
