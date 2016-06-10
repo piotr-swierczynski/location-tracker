@@ -720,9 +720,10 @@
         android:layout_height="wrap_content"
         android:text="Initial Belief"
         android:id="@+id/initBeliefBtn"
-        android:layout_alignTop="@+id/localizeBtn"
-        android:layout_toLeftOf="@+id/layout_c10"
-        android:layout_toStartOf="@+id/layout_c10" />
+        android:layout_below="@+id/continuousBtn"
+        android:layout_toLeftOf="@+id/button"
+        android:layout_toStartOf="@+id/button"
+        android:onClick="onInitialBeliefClick" />
 
     <Button
         android:layout_width="wrap_content"
@@ -730,20 +731,20 @@
         android:text="Localize"
         android:id="@+id/localizeBtn"
         android:onClick="onLocalizationClick"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/layout_c8"
-        android:layout_toEndOf="@+id/layout_c8" />
+        android:layout_above="@+id/initBeliefBtn"
+        android:layout_toLeftOf="@+id/continuousBtn"
+        android:layout_toStartOf="@+id/continuousBtn" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Continuous Localization"
+        android:text="Continuous Localization (Very accurate)"
         android:id="@+id/continuousBtn"
-        android:layout_above="@+id/initBeliefBtn"
-        android:layout_toRightOf="@+id/layout_c12"
-        android:layout_toEndOf="@+id/layout_c12"
         android:onClick="onContinuousLocalizationClick"
-        android:nestedScrollingEnabled="true" />
+        android:nestedScrollingEnabled="true"
+        android:layout_below="@+id/layout_c8"
+        android:layout_alignRight="@+id/layout_c1"
+        android:layout_alignEnd="@+id/layout_c1" />
 
     <ImageView
         android:layout_width="50dp"
@@ -752,5 +753,16 @@
         android:scaleType="centerInside"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continuous Localization (Very Fast)"
+        android:id="@+id/button"
+        android:onClick="onContinuousLocalizationFastClick"
+        android:nestedScrollingEnabled="true"
+        android:layout_below="@+id/continuousBtn"
+        android:layout_alignRight="@+id/continuousBtn"
+        android:layout_alignEnd="@+id/continuousBtn" />
 
 </RelativeLayout>

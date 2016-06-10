@@ -1,6 +1,7 @@
 package nl.tudelft.exchange.student.locationtracker;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIBroadcastReceiver;
@@ -29,7 +31,9 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
     private Pair<RSSIBroadcastReceiver, IntentFilter> broadcastReceiverPair;
     private BayesianFilter bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
     private boolean enabledLocalization = false;
-    private boolean enabledContinuousLocalization = false;
+    private boolean enabledContinuousLocalizationAccurate = false;
+    private boolean enabledContinuousLocalizationFast = false;
+    private boolean userInitialBelief = false;
     private ProgressDialog progressDialog;
     private static final int VOTE_SIZE = 9;
     private int[] votes = new int[BayesianFilter.NUMBER_OF_CELLS];
@@ -59,19 +63,61 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
     }
 
     public void onLocalizationClick(View v) {
-        bayesianFilter.resetFilter();
+        if(!userInitialBelief)
+            bayesianFilter.resetFilter();
         clearTheInDoorMap();
         resetVotes();
         votesCounter = 0;
+        updateDisplayedProbabilities();
         enabledLocalization = true;
         //progressDialog = ProgressDialog.show(this, "Localization process", "It may take a few seconds", true);
     }
 
+    public void onInitialBeliefClick(View v) {
+        ImageButton initialBeliefCell = null;
+        for(View imBtn : LocalizationActivity.this.findViewById(R.id.local_layout).getTouchables()) {
+            if(imBtn instanceof ImageButton && ((ImageButton) imBtn).getColorFilter() != null) {
+                initialBeliefCell = ((ImageButton) imBtn);
+                break;
+            }
+        }
+        if(initialBeliefCell == null) {
+            Toast.makeText(LocalizationActivity.this, "Choose one of the cells as initial belief!", Toast.LENGTH_SHORT).show();
+        } else {
+            int chosenCellID = Integer.parseInt(initialBeliefCell.getTag().toString()) - 1;
+            int numberOfNeighbours = 0;
+            int[] neighboursIdx = new int[] {-1,-1,-1};
+            Double[] apostiriorMemory = new Double[BayesianFilter.NUMBER_OF_CELLS];
+            apostiriorMemory[chosenCellID] = 0.3;
+            for(int i = 0; i < BayesianFilter.NUMBER_OF_CELLS; ++i) {
+                if(ArrowManager.arrow[chosenCellID][i] > 0) {
+                    ++numberOfNeighbours;
+                    neighboursIdx[numberOfNeighbours-1] = i;
+                }
+            }
+            for(int i = 0; i < BayesianFilter.NUMBER_OF_CELLS; ++i) {
+                if(i == chosenCellID) {
+                    apostiriorMemory[i] = 0.3;
+                } else if(neighboursIdx[0] == i || neighboursIdx[1] == i || neighboursIdx[2] == i) {
+                    apostiriorMemory[i] = 0.1;
+                } else {
+                    apostiriorMemory[i] = (1-0.3-(0.1*numberOfNeighbours))/(BayesianFilter.NUMBER_OF_CELLS-numberOfNeighbours-1);
+                }
+            }
+            bayesianFilter.setAposterioriMemory(apostiriorMemory);
+            userInitialBelief = true;
+        }
+    }
+
     public void onContinuousLocalizationClick(View v) {
-        if(!enabledContinuousLocalization) {
+        if(!enabledContinuousLocalizationAccurate) {
             continuousLocalizer.reset();
         }
-        enabledContinuousLocalization = !enabledContinuousLocalization;
+        enabledContinuousLocalizationAccurate = !enabledContinuousLocalizationAccurate;
+    }
+
+    public void onContinuousLocalizationFastClick(View v) {
+        enabledContinuousLocalizationFast = !enabledContinuousLocalizationFast;
     }
 
     public void finalizeLocalizationProcess() {
@@ -93,12 +139,23 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
         ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
         localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
         Toast.makeText(LocalizationActivity.this, "Jestes w pokoju o id: C" + (idx + 1), Toast.LENGTH_SHORT).show();
+        userInitialBelief = false;
         //progressDialog.dismiss();
     }
 
     @Override
     public void handleScanResults(List<ScanResult> scanResults) {
         if(enabledLocalization) {
+            Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
+            updateDisplayedProbabilities();
+            if(iterationResultsFromBayesianFilter.second > 0.95) {
+                ++votes[iterationResultsFromBayesianFilter.first];
+                ++votesCounter;
+                if (votesCounter == VOTE_SIZE) {
+                    finalizeLocalizationProcess();
+                }
+            }
+        } else if(enabledContinuousLocalizationFast) {
             clearTheInDoorMap();
             bayesianFilter.resetFilter();
             Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
@@ -107,24 +164,22 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
             int localizedCellID = getResources().getIdentifier("c"+(iterationResultsFromBayesianFilter.first + 1), "id", getPackageName());
             ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
             localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
-            /*
-            if(iterationResultsFromBayesianFilter.second > 0.95) {
-                ++votes[iterationResultsFromBayesianFilter.first];
-                ++votesCounter;
-                if (votesCounter == VOTE_SIZE) {
-                    finalizeLocalizationProcess();
-                }
+            if (currentCell == null) {
+                currentCell = localizedCell;
+            } else if (currentCell != localizedCell) {
+                previousCell = currentCell;
+                currentCell = localizedCell;
+                ArrowManager.setArrow(this, previousCell.getTag(), currentCell.getTag());
+                //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
             }
-            */
-        }
-        else if(enabledContinuousLocalization) {
+        } else if(enabledContinuousLocalizationAccurate) {
             clearTheInDoorMap();
             int cellIndex = continuousLocalizer.localize(scanResults);
-            if(cellIndex != -1) {
+            if (cellIndex != -1) {
                 int localizedCellID = getResources().getIdentifier("c" + (cellIndex + 1), "id", getPackageName());
                 ImageButton localizedCell = (ImageButton) findViewById(localizedCellID);
                 localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
-                if(currentCell == null) {
+                if (currentCell == null) {
                     currentCell = localizedCell;
                 } else if (currentCell != localizedCell) {
                     previousCell = currentCell;
@@ -132,7 +187,7 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
                     ArrowManager.setArrow(this, previousCell.getTag(), currentCell.getTag());
                     //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
-                if(previousCell != null) {
+                if (previousCell != null) {
                     //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
             }

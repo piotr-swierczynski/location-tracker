@@ -51,7 +51,7 @@ public class BayesianFilter {
 
     public void resetFilter() {
         for(int i = 0; i < NUMBER_OF_CELLS; ++i) {
-            aposterioriMemory[i] = null;
+            aposterioriMemory[i] = (double)1/NUMBER_OF_CELLS;
         }
     }
 

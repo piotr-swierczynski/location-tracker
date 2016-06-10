@@ -14,7 +14,7 @@ public class ArrowManager {
 
     private static Activity activity;
 
-    private static int[][] arrow = new int[][]{
+    public static int[][] arrow = new int[][]{
             {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 2, 0, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
