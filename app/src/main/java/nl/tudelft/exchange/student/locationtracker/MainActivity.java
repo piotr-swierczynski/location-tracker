@@ -1,7 +1,9 @@
 package nl.tudelft.exchange.student.locationtracker;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
@@ -13,22 +15,22 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import nl.tudelft.exchange.student.locationtracker.data.AccData;
 import nl.tudelft.exchange.student.locationtracker.data.RssData;
 import nl.tudelft.exchange.student.locationtracker.data.saver.AccDataSaver;
 import nl.tudelft.exchange.student.locationtracker.data.saver.RssDataSaver;
 import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
-import nl.tudelft.exchange.student.locationtracker.filter.data.AccessPoint;
-import nl.tudelft.exchange.student.locationtracker.filter.data.SignalInCellCharacteristic;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -44,10 +46,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button saveRss;
     private Button startScanAcc;
     private Button startScanRss;
+    private Button localizeBtn;
     private boolean enableAccScan = false;
     private boolean enableRssScan = false;
+    private boolean enableLocalization = false;
     private BayesianFilter bayesianFilter = null;
     private int counter = 0;
+    private int initialBelieveCell;
+    private String filename = "filename";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         saveRss = (Button) findViewById(R.id.button2);
         startScanAcc = (Button) findViewById(R.id.button3);
         startScanRss = (Button) findViewById(R.id.button4);
+        localizeBtn = (Button) findViewById(R.id.localize);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -66,18 +73,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("LT", "No accelerometer!!!");
         }
 
-        bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
-//        for(Map.Entry<String, AccessPoint> entry : bayesianFilter.getAccessPointMap().entrySet()) {
-//            Log.d("LT", ""+entry.getKey());
-//            for(Map.Entry<Integer, SignalInCellCharacteristic> accpoint : entry.getValue().getCellsCharacteristicMap().entrySet()) {
-//                Log.d("LT", ""+accpoint.getKey()+" "+accpoint.getValue().getMeanSignalValue()+" "+accpoint.getValue().getStandardDeviationOfSignalValue());
-//            }
-//        }
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         rssiBroadcastReceiver = new RSSIBroadcastReceiver();
         registerReceiver(rssiBroadcastReceiver, intentFilter);
+        wifiManager.setFrequencyBand(WifiManager.WIFI_FREQUENCY_BAND_2GHZ, false);
         wifiManager.startScan();
+
+        localizeBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LocalizationActivity.class));
+            }
+        });
 
         saveAcc.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -94,14 +101,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         saveRss.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "RSS results have been saved!", Toast.LENGTH_LONG).show();
-                try {
-                    enableRssScan = false;
-                    new RssDataSaver().save(rssDataSet, MainActivity.this);
-                    rssDataSet = new ArrayList<>();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                enableRssScan = false;
+                // get prompts.xml view
+                LayoutInflater li = LayoutInflater.from(MainActivity.this);
+                View promptsView = li.inflate(R.layout.filename_prompt, null);
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        MainActivity.this);
+
+                // set prompts.xml to alertdialog builder
+                alertDialogBuilder.setView(promptsView);
+
+                final EditText userInput = (EditText) promptsView
+                        .findViewById(R.id.editTextDialogUserInput);
+
+                // set dialog message
+                alertDialogBuilder
+                        .setCancelable(false)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // get user input and set it to result
+                                        // edit text
+                                        filename = userInput.getText().toString();
+                                        Toast.makeText(MainActivity.this, "RSS results have been saved! --> " + filename + ".txt", Toast.LENGTH_LONG).show();
+                                        try {
+                                            new RssDataSaver().save(rssDataSet, filename, MainActivity.this);
+                                            rssDataSet = new ArrayList<>();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                })
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                // show it
+                alertDialog.show();
             }
         });
 
@@ -118,6 +161,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 enableRssScan = true;
             }
         });
+
+    }
+
+    public void onSwitchClicked(View view) {
+        enableLocalization = !enableLocalization;
+        if(enableLocalization) {
+            bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("EWIdata.txt"));
+            counter = 0;
+        }
+    }
+
+    public void onRadioButtonClicked(View view) {
+        switch(view.getId()) {
+            case R.id.radioButton1:
+                initialBelieveCell = 0;
+                Toast.makeText(MainActivity.this, "0", Toast.LENGTH_LONG).show();
+                break;
+            case R.id.radioButton2:
+                initialBelieveCell = 1;
+                Toast.makeText(MainActivity.this, "1", Toast.LENGTH_LONG).show();
+                break;
+            case R.id.radioButton3:
+                initialBelieveCell = 2;
+                Toast.makeText(MainActivity.this, "2", Toast.LENGTH_LONG).show();
+                break;
+            case R.id.radioButton4:
+                initialBelieveCell = 3;
+                Toast.makeText(MainActivity.this, "3", Toast.LENGTH_LONG).show();
+                break;
+        }
     }
 
     // onResume() register the accelerometer for listening the events
@@ -151,20 +224,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onReceive(Context c, Intent i) {
             // Code to execute when SCAN_RESULTS_AVAILABLE_ACTION event occurs
             WifiManager wifiManager = (WifiManager) c.getSystemService(Context.WIFI_SERVICE);
-            rssiScanResultHandler(wifiManager.getScanResults()); // your method to handle Scan results
+            rssiScanResultHandler(wifiManager.getScanResults());
             wifiManager.startScan(); // relaunch scan immediately
         }
+
     }
 
     private void rssiScanResultHandler(List<ScanResult> scanResults) {
-        double probability = bayesianFilter.updateBelieve(scanResults,0);
-        Log.d("LT", "Probability "+(counter++)+" : "+probability);
-        if(probability > 0.9) {
-            Toast.makeText(MainActivity.this, "Po: "+(counter-1)+" iteracjach!", Toast.LENGTH_LONG).show();
+        if(enableLocalization) {
+            Pair<Integer, Double> probability = bayesianFilter.probability(scanResults);
+            Toast.makeText(MainActivity.this, "Cell id: " + probability.first + " P(Si|O) = "+probability.second+"! Po: " + ++counter + " iteracjach!", Toast.LENGTH_SHORT).show();
+            if (probability.second > 0.9) {
+                Toast.makeText(MainActivity.this, "Jestes w pokoju o id: " + probability.first, Toast.LENGTH_SHORT).show();
+            }
         }
         if(enableRssScan) {
-            Toast.makeText(MainActivity.this, "Po: "+(counter)+" iteracjach!", Toast.LENGTH_LONG).show();
             rssDataSet.add(new RssData(System.currentTimeMillis(), scanResults));
+            Toast.makeText(MainActivity.this, "Liczba skanów: "+rssDataSet.size(), Toast.LENGTH_SHORT).show();
         }
     }
 }
