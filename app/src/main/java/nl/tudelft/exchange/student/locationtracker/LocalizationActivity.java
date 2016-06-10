@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
+import nl.tudelft.exchange.student.locationtracker.filter.data.ContinuousLocalizer;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
 
 public class LocalizationActivity extends AppCompatActivity {
@@ -31,10 +32,14 @@ public class LocalizationActivity extends AppCompatActivity {
     private IntentFilter intentFilter = new IntentFilter();
     private BayesianFilter bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
     private boolean enabledLocalization = false;
+    private boolean enabledContinuousLocalization = false;
     private ProgressDialog progressDialog;
-    private static final int VOTE_SIZE = 7;
+    private static final int VOTE_SIZE = 9;
     private int[] votes = new int[BayesianFilter.NUMBER_OF_CELLS];
     private int votesCounter;
+    private ContinuousLocalizer continuousLocalizer = new ContinuousLocalizer("PDF.txt");
+    private ImageButton currentCell = null;
+    private ImageButton previousCell = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +67,19 @@ public class LocalizationActivity extends AppCompatActivity {
     }
 
     public void onLocalizationClick(View v) {
-        //FIXME possible changes here - no reset during localization process
         bayesianFilter.resetFilter();
         clearTheInDoorMap();
         resetVotes();
         votesCounter = 0;
         enabledLocalization = true;
         //progressDialog = ProgressDialog.show(this, "Localization process", "It may take a few seconds", true);
+    }
+
+    public void onContinuousLocalizationClick(View v) {
+        if(!enabledContinuousLocalization) {
+            continuousLocalizer.reset();
+        }
+        enabledContinuousLocalization = !enabledContinuousLocalization;
     }
 
     public void finalizeLocalizationProcess() {
@@ -86,7 +97,6 @@ public class LocalizationActivity extends AppCompatActivity {
                 }
             }
         }
-        Log.d("LT",""+votes[0]+" "+votes[1]+" "+votes[2]+" "+votes[3]);
         int localizedCellID = getResources().getIdentifier("c"+(idx + 1), "id", getPackageName());
         ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
         localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
@@ -115,6 +125,26 @@ public class LocalizationActivity extends AppCompatActivity {
                 if (votesCounter == VOTE_SIZE) {
                     finalizeLocalizationProcess();
                 }
+            }
+        }
+        if(enabledContinuousLocalization) {
+            clearTheInDoorMap();
+            int cellIndex = continuousLocalizer.localize(scanResults);
+            if(cellIndex != -1) {
+                int localizedCellID = getResources().getIdentifier("c" + (cellIndex + 1), "id", getPackageName());
+                ImageButton localizedCell = (ImageButton) findViewById(localizedCellID);
+                localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
+                if(currentCell == null) {
+                    currentCell = localizedCell;
+                } else if (currentCell != localizedCell) {
+                    previousCell = currentCell;
+                    currentCell = localizedCell;
+                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                }
+                if(previousCell != null) {
+                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                }
+                //Toast.makeText(LocalizationActivity.this, "Jestes w pokoju o id: C" + (cellIndex + 1), Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -13,7 +13,7 @@ import nl.tudelft.exchange.student.locationtracker.filter.data.AccessPoint;
  */
 public class BayesianFilter {
 
-    public static final int NUMBER_OF_CELLS = 4;
+    public static final int NUMBER_OF_CELLS = 18;
 
     private Map<String, AccessPoint> accessPointMap;
 
