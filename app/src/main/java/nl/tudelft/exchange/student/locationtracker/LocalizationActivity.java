@@ -1,16 +1,11 @@
 package nl.tudelft.exchange.student.locationtracker;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,15 +16,16 @@ import android.widget.Toast;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIBroadcastReceiver;
+import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIBroadcastReceiverInitializer;
+import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIScanResultHandler;
 import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
-import nl.tudelft.exchange.student.locationtracker.filter.data.ContinuousLocalizer;
+import nl.tudelft.exchange.student.locationtracker.filter.ContinuousLocalizer;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
 
-public class LocalizationActivity extends AppCompatActivity {
+public class LocalizationActivity extends AppCompatActivity implements RSSIScanResultHandler{
 
-    private WifiManager wifiManager;
-    private RSSIBroadcastReceiver rssiBroadcastReceiver;
-    private IntentFilter intentFilter = new IntentFilter();
+    private Pair<RSSIBroadcastReceiver, IntentFilter> broadcastReceiverPair;
     private BayesianFilter bayesianFilter = new BayesianFilter(BayesianFilterDataLoader.loadData("PDF.txt"));
     private boolean enabledLocalization = false;
     private boolean enabledContinuousLocalization = false;
@@ -45,25 +41,20 @@ public class LocalizationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_localization);
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        rssiBroadcastReceiver = new RSSIBroadcastReceiver();
-        registerReceiver(rssiBroadcastReceiver, intentFilter);
-        wifiManager.setFrequencyBand(WifiManager.WIFI_FREQUENCY_BAND_2GHZ, false);
-        wifiManager.startScan();
+        broadcastReceiverPair = RSSIBroadcastReceiverInitializer.initialize(this);
         initializeImageButtons();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(rssiBroadcastReceiver, intentFilter);
+        registerReceiver(broadcastReceiverPair.first, broadcastReceiverPair.second);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(rssiBroadcastReceiver);
+        unregisterReceiver(broadcastReceiverPair.first);
     }
 
     public void onLocalizationClick(View v) {
@@ -104,18 +95,8 @@ public class LocalizationActivity extends AppCompatActivity {
         //progressDialog.dismiss();
     }
 
-    private class RSSIBroadcastReceiver extends BroadcastReceiver {
-
-        public void onReceive(Context c, Intent i) {
-            WifiManager wifiManager = (WifiManager) c.getSystemService(Context.WIFI_SERVICE);
-            rssiScanResultHandler(wifiManager.getScanResults());
-            wifiManager.startScan();
-        }
-
-    }
-
-    //FIXME
-    private void rssiScanResultHandler(List<ScanResult> scanResults) {
+    @Override
+    public void handleScanResults(List<ScanResult> scanResults) {
         if(enabledLocalization) {
             Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
             updateDisplayedProbabilities();
@@ -144,7 +125,6 @@ public class LocalizationActivity extends AppCompatActivity {
                 if(previousCell != null) {
                     previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
-                //Toast.makeText(LocalizationActivity.this, "Jestes w pokoju o id: C" + (cellIndex + 1), Toast.LENGTH_SHORT).show();
             }
         }
     }

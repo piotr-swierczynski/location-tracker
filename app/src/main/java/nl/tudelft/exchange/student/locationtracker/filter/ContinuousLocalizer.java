@@ -1,12 +1,10 @@
-package nl.tudelft.exchange.student.locationtracker.filter.data;
+package nl.tudelft.exchange.student.locationtracker.filter;
 
 import android.net.wifi.ScanResult;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import nl.tudelft.exchange.student.locationtracker.filter.VotingLocalizer;
 
 /**
  * Created by Piotr on 2016-06-10.
