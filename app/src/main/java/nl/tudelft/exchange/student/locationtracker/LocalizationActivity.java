@@ -22,6 +22,7 @@ import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIScanResultH
 import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
 import nl.tudelft.exchange.student.locationtracker.filter.ContinuousLocalizer;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
+import nl.tudelft.exchange.student.locationtracker.movement.ArrowManager;
 
 public class LocalizationActivity extends AppCompatActivity implements RSSIScanResultHandler{
 
@@ -98,8 +99,15 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
     @Override
     public void handleScanResults(List<ScanResult> scanResults) {
         if(enabledLocalization) {
+            clearTheInDoorMap();
+            bayesianFilter.resetFilter();
             Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
             updateDisplayedProbabilities();
+
+            int localizedCellID = getResources().getIdentifier("c"+(iterationResultsFromBayesianFilter.first + 1), "id", getPackageName());
+            ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
+            localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
+            /*
             if(iterationResultsFromBayesianFilter.second > 0.95) {
                 ++votes[iterationResultsFromBayesianFilter.first];
                 ++votesCounter;
@@ -107,8 +115,9 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
                     finalizeLocalizationProcess();
                 }
             }
+            */
         }
-        if(enabledContinuousLocalization) {
+        else if(enabledContinuousLocalization) {
             clearTheInDoorMap();
             int cellIndex = continuousLocalizer.localize(scanResults);
             if(cellIndex != -1) {
@@ -120,10 +129,11 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
                 } else if (currentCell != localizedCell) {
                     previousCell = currentCell;
                     currentCell = localizedCell;
-                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                    ArrowManager.setArrow(this, previousCell.getTag(), currentCell.getTag());
+                    //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
                 if(previousCell != null) {
-                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                    //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
             }
         }
