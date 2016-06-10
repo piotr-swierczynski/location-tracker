@@ -24,6 +24,7 @@ import java.util.List;
 import nl.tudelft.exchange.student.locationtracker.filter.BayesianFilter;
 import nl.tudelft.exchange.student.locationtracker.filter.data.ContinuousLocalizer;
 import nl.tudelft.exchange.student.locationtracker.filter.data.loader.BayesianFilterDataLoader;
+import nl.tudelft.exchange.student.locationtracker.movement.ArrowManager;
 
 public class LocalizationActivity extends AppCompatActivity {
 
@@ -117,8 +118,15 @@ public class LocalizationActivity extends AppCompatActivity {
     //FIXME
     private void rssiScanResultHandler(List<ScanResult> scanResults) {
         if(enabledLocalization) {
+            clearTheInDoorMap();
+            bayesianFilter.resetFilter();
             Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
             updateDisplayedProbabilities();
+
+            int localizedCellID = getResources().getIdentifier("c"+(iterationResultsFromBayesianFilter.first + 1), "id", getPackageName());
+            ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
+            localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
+            /*
             if(iterationResultsFromBayesianFilter.second > 0.95) {
                 ++votes[iterationResultsFromBayesianFilter.first];
                 ++votesCounter;
@@ -126,8 +134,9 @@ public class LocalizationActivity extends AppCompatActivity {
                     finalizeLocalizationProcess();
                 }
             }
+            */
         }
-        if(enabledContinuousLocalization) {
+        else if(enabledContinuousLocalization) {
             clearTheInDoorMap();
             int cellIndex = continuousLocalizer.localize(scanResults);
             if(cellIndex != -1) {
@@ -139,10 +148,11 @@ public class LocalizationActivity extends AppCompatActivity {
                 } else if (currentCell != localizedCell) {
                     previousCell = currentCell;
                     currentCell = localizedCell;
-                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                    ArrowManager.setArrow(this, previousCell.getTag(), currentCell.getTag());
+                    //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
                 if(previousCell != null) {
-                    previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
+                    //previousCell.setColorFilter(Color.argb(65, 255, 0, 0));
                 }
                 //Toast.makeText(LocalizationActivity.this, "Jestes w pokoju o id: C" + (cellIndex + 1), Toast.LENGTH_SHORT).show();
             }
