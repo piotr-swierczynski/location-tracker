@@ -716,4 +716,15 @@
         android:layout_toRightOf="@+id/layout_c8"
         android:layout_toEndOf="@+id/layout_c8" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continuous Localization"
+        android:id="@+id/continuousBtn"
+        android:layout_above="@+id/initBeliefBtn"
+        android:layout_toRightOf="@+id/layout_c12"
+        android:layout_toEndOf="@+id/layout_c12"
+        android:onClick="onContinuousLocalizationClick"
+        android:nestedScrollingEnabled="true" />
+
 </RelativeLayout>
