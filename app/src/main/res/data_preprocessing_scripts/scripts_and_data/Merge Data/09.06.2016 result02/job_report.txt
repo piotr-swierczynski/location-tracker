@@ -1,0 +1,11 @@
+Ilosc wszytkich probek dla pliku input/C3.txt: 302
+Ilosc wszytkich probek dla pliku pattern/C3.txt: 146
+Plik: C3.txt
+Ilosc adresow przed przesiewe: 66
+Ilosc adresow po przesiewie: 32
+MacBook-Pro-Pawe:Merge Data stepien$ python merge_common_ap.py 
+Ilosc wszytkich probek dla pliku input/C14.txt: 359
+Ilosc wszytkich probek dla pliku pattern/C14.txt: 146
+Plik: C14.txt
+Ilosc adresow przed przesiewe: 36
+Ilosc adresow po przesiewie: 27

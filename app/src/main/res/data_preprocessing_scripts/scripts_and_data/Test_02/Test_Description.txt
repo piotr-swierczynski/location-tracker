@@ -1,0 +1,5 @@
+1. PDF_80dbTrimmed (still problems with C3 - 50% of accuracy confused with C4, little problems with C14, but there is visible progress)
+2. PDF_without80dBTrimming
+
+From the best to the worst
+1 - 2 = equally good, but theoretically 2 should be better

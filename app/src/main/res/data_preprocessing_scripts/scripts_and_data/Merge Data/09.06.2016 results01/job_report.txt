@@ -1,0 +1,90 @@
+Ilosc wszytkich probek dla pliku input/C1.txt: 210
+Ilosc wszytkich probek dla pliku pattern/C1.txt: 144
+Plik: C1.txt
+Ilosc adresow przed przesiewe: 80
+Ilosc adresow po przesiewie: 62
+Ilosc wszytkich probek dla pliku input/C2.txt: 207
+Ilosc wszytkich probek dla pliku pattern/C2.txt: 144
+Plik: C2.txt
+Ilosc adresow przed przesiewe: 59
+Ilosc adresow po przesiewie: 54
+Ilosc wszytkich probek dla pliku input/C3.txt: 213
+Ilosc wszytkich probek dla pliku pattern/C3.txt: 146
+Plik: C3.txt
+Ilosc adresow przed przesiewe: 52
+Ilosc adresow po przesiewie: 29
+Ilosc wszytkich probek dla pliku input/C4.txt: 206
+Ilosc wszytkich probek dla pliku pattern/C4.txt: 144
+Plik: C4.txt
+Ilosc adresow przed przesiewe: 32
+Ilosc adresow po przesiewie: 26
+Ilosc wszytkich probek dla pliku input/C5.txt: 206
+Ilosc wszytkich probek dla pliku pattern/C5.txt: 145
+Plik: C5.txt
+Ilosc adresow przed przesiewe: 59
+Ilosc adresow po przesiewie: 38
+Ilosc wszytkich probek dla pliku input/C6.txt: 212
+Ilosc wszytkich probek dla pliku pattern/C6.txt: 145
+Plik: C6.txt
+Ilosc adresow przed przesiewe: 62
+Ilosc adresow po przesiewie: 44
+Ilosc wszytkich probek dla pliku input/C7.txt: 210
+Ilosc wszytkich probek dla pliku pattern/C7.txt: 142
+Plik: C7.txt
+Ilosc adresow przed przesiewe: 50
+Ilosc adresow po przesiewie: 39
+Ilosc wszytkich probek dla pliku input/C8.txt: 247
+Ilosc wszytkich probek dla pliku pattern/C8.txt: 145
+Plik: C8.txt
+Ilosc adresow przed przesiewe: 118
+Ilosc adresow po przesiewie: 75
+Ilosc wszytkich probek dla pliku input/C9.txt: 207
+Ilosc wszytkich probek dla pliku pattern/C9.txt: 153
+Plik: C9.txt
+Ilosc adresow przed przesiewe: 48
+Ilosc adresow po przesiewie: 34
+Ilosc wszytkich probek dla pliku input/C10.txt: 205
+Ilosc wszytkich probek dla pliku pattern/C10.txt: 145
+Plik: C10.txt
+Ilosc adresow przed przesiewe: 54
+Ilosc adresow po przesiewie: 35
+Ilosc wszytkich probek dla pliku input/C11.txt: 207
+Ilosc wszytkich probek dla pliku pattern/C11.txt: 142
+Plik: C11.txt
+Ilosc adresow przed przesiewe: 44
+Ilosc adresow po przesiewie: 26
+Ilosc wszytkich probek dla pliku input/C12.txt: 214
+Ilosc wszytkich probek dla pliku pattern/C12.txt: 146
+Plik: C12.txt
+Ilosc adresow przed przesiewe: 33
+Ilosc adresow po przesiewie: 25
+Ilosc wszytkich probek dla pliku input/C13.txt: 208
+Ilosc wszytkich probek dla pliku pattern/C13.txt: 144
+Plik: C13.txt
+Ilosc adresow przed przesiewe: 49
+Ilosc adresow po przesiewie: 33
+Ilosc wszytkich probek dla pliku input/C14.txt: 203
+Ilosc wszytkich probek dla pliku pattern/C14.txt: 146
+Plik: C14.txt
+Ilosc adresow przed przesiewe: 33
+Ilosc adresow po przesiewie: 27
+Ilosc wszytkich probek dla pliku input/C15.txt: 204
+Ilosc wszytkich probek dla pliku pattern/C15.txt: 149
+Plik: C15.txt
+Ilosc adresow przed przesiewe: 36
+Ilosc adresow po przesiewie: 27
+Ilosc wszytkich probek dla pliku input/C16.txt: 205
+Ilosc wszytkich probek dla pliku pattern/C16.txt: 148
+Plik: C16.txt
+Ilosc adresow przed przesiewe: 34
+Ilosc adresow po przesiewie: 23
+Ilosc wszytkich probek dla pliku input/C17.txt: 202
+Ilosc wszytkich probek dla pliku pattern/C17.txt: 142
+Plik: C17.txt
+Ilosc adresow przed przesiewe: 42
+Ilosc adresow po przesiewie: 28
+Ilosc wszytkich probek dla pliku input/C18.txt: 205
+Ilosc wszytkich probek dla pliku pattern/C18.txt: 147
+Plik: C18.txt
+Ilosc adresow przed przesiewe: 66
+Ilosc adresow po przesiewie: 35

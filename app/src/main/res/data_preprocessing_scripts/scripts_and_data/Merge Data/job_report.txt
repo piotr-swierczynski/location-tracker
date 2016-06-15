@@ -1,0 +1,5 @@
+Ilosc wszytkich probek dla pliku input/C3.txt: 302
+Ilosc wszytkich probek dla pliku pattern/C4.txt: 144
+Plik: C3.txt
+Ilosc adresow przed przesiewe: 66
+Ilosc adresow po przesiewie: 25
