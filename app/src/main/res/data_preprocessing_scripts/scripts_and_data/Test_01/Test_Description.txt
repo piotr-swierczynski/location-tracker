@@ -1,0 +1,7 @@
+1. PDF_80dbTrimmed (almost 100%)
+2. PDF_FC_80dbTrimmed (70% - big problem with C3)
+3. PDF_without80dBTrimming (95% - almost same good results as for 1 approach)
+4. PDF_FC_without80dBTrimming (85% - good, but still there were problems with C3, and in most cases app was not as sure as in another methods)
+
+From the best to the worst
+1, 3, 4, 2
