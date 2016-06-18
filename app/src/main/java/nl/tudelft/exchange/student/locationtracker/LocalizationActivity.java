@@ -1,7 +1,6 @@
 package nl.tudelft.exchange.student.locationtracker;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
@@ -15,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.exchange.student.locationtracker.data.receiver.RSSIBroadcastReceiver;
@@ -70,7 +68,7 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
         votesCounter = 0;
         updateDisplayedProbabilities();
         enabledLocalization = true;
-        //progressDialog = ProgressDialog.show(this, "Localization process", "It may take a few seconds", true);
+        progressDialog = ProgressDialog.show(this, "Localization process", "It may take a few seconds", true);
     }
 
     public void onInitialBeliefClick(View v) {
@@ -82,7 +80,7 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
             }
         }
         if(initialBeliefCell == null) {
-            Toast.makeText(LocalizationActivity.this, "Choose one of the cells as initial belief!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LocalizationActivity.this, "Choose one of the cells as initial belief or all cells will have equal initial probability!", Toast.LENGTH_SHORT).show();
         } else {
             int chosenCellID = Integer.parseInt(initialBeliefCell.getTag().toString()) - 1;
             int numberOfNeighbours = 0;
@@ -138,9 +136,9 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
         int localizedCellID = getResources().getIdentifier("c"+(idx + 1), "id", getPackageName());
         ImageButton localizedCell = (ImageButton)findViewById(localizedCellID);
         localizedCell.setColorFilter(Color.argb(110, 255, 0, 0));
-        Toast.makeText(LocalizationActivity.this, "Jestes w pokoju o id: C" + (idx + 1), Toast.LENGTH_SHORT).show();
+        Toast.makeText(LocalizationActivity.this, "You're in cell: C" + (idx + 1), Toast.LENGTH_SHORT).show();
         userInitialBelief = false;
-        //progressDialog.dismiss();
+        progressDialog.dismiss();
     }
 
     @Override
