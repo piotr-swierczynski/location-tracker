@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save ACC"
+        android:background="@drawable/button"
         android:id="@+id/button1"
         android:layout_marginTop="52dp"
         android:layout_alignParentLeft="true"
@@ -22,6 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save RSS"
+        android:background="@drawable/button"
         android:id="@+id/button2"
         android:layout_alignTop="@+id/button1"
         android:layout_toRightOf="@+id/button1"
@@ -32,6 +34,8 @@
         android:layout_height="wrap_content"
         android:text="Start ACC Scan"
         android:id="@+id/button3"
+        android:background="@drawable/button"
+        android:padding="5dp"
         android:layout_below="@+id/button1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -40,7 +44,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start RSS Scan"
+        android:padding="5dp"
         android:id="@+id/button4"
+        android:background="@drawable/button"
         android:layout_below="@+id/button3"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -50,6 +56,7 @@
         android:layout_height="wrap_content"
         android:text="Localize"
         android:id="@+id/localize"
+        android:background="@drawable/button"
         android:layout_alignTop="@+id/button2"
         android:layout_toRightOf="@+id/button2"
         android:layout_toEndOf="@+id/button2" />

@@ -33,9 +33,10 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
     private boolean enabledContinuousLocalizationFast = false;
     private boolean userInitialBelief = false;
     private ProgressDialog progressDialog;
-    private static final int VOTE_SIZE = 9;
+    private static final int VOTE_SIZE = 7;
     private int[] votes = new int[BayesianFilter.NUMBER_OF_CELLS];
     private int votesCounter;
+    private int iterationCounter;
     private ContinuousLocalizer continuousLocalizer = new ContinuousLocalizer("PDF.txt");
     private ImageButton currentCell = null;
     private ImageButton previousCell = null;
@@ -66,6 +67,7 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
         clearTheInDoorMap();
         resetVotes();
         votesCounter = 0;
+        iterationCounter = 0;
         updateDisplayedProbabilities();
         enabledLocalization = true;
         progressDialog = ProgressDialog.show(this, "Localization process", "It may take a few seconds", true);
@@ -152,6 +154,12 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
                 if (votesCounter == VOTE_SIZE) {
                     finalizeLocalizationProcess();
                 }
+            }
+            ++iterationCounter;
+            if(iterationCounter > 15) {
+                enabledLocalization = false;
+                progressDialog.dismiss();
+                Toast.makeText(LocalizationActivity.this, "Sorry, but it was impossible to localize your phone!", Toast.LENGTH_SHORT).show();
             }
         } else if(enabledContinuousLocalizationFast) {
             clearTheInDoorMap();
