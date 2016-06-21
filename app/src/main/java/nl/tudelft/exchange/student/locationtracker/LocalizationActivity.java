@@ -148,15 +148,15 @@ public class LocalizationActivity extends AppCompatActivity implements RSSIScanR
         if(enabledLocalization) {
             Pair<Integer, Double> iterationResultsFromBayesianFilter = bayesianFilter.probability(scanResults);
             updateDisplayedProbabilities();
+            ++iterationCounter;
             if(iterationResultsFromBayesianFilter.second > 0.95) {
                 ++votes[iterationResultsFromBayesianFilter.first];
                 ++votesCounter;
                 if (votesCounter == VOTE_SIZE) {
                     finalizeLocalizationProcess();
                 }
-            }
-            ++iterationCounter;
-            if(iterationCounter > 15) {
+                --iterationCounter;
+            } else if(iterationCounter > 15) {
                 enabledLocalization = false;
                 progressDialog.dismiss();
                 Toast.makeText(LocalizationActivity.this, "Sorry, but it was impossible to localize your phone!", Toast.LENGTH_SHORT).show();
